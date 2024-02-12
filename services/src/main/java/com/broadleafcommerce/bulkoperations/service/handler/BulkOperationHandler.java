@@ -14,29 +14,16 @@
  * trade secret or copyright law. Dissemination of this information or reproduction of this material
  * is strictly forbidden unless prior written permission is obtained from Broadleaf Commerce, LLC.
  */
-package com.broadleafcommerce.bulkoperations.service.provider;
-
-import org.springframework.data.domain.Pageable;
+package com.broadleafcommerce.bulkoperations.service.handler;
 
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
-import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
-import com.broadleafcommerce.bulkoperations.domain.SearchResponse;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
 
-public interface SearchProvider<I extends CatalogItem> {
+public interface BulkOperationHandler {
 
+    boolean canHandle(String operationType, String entityType);
 
-    /**
-     * Performs a search for the provided request.
-     *
-     * @param request All of the relevant information to be used to retrieve search results.
-     *
-     * @return The {@link SearchResponse} with results for the request.
-     * @throws ProviderApiException if the provider encounters an error with the request.
-     */
-    SearchResponse<I> getSearchResults(BulkOperationRequest request,
-            BulkOperationResponse bulkOperationResponse,
-            Pageable pageable,
+    BulkOperationResponse handle(BulkOperationRequest bulkOperationRequest,
             ContextInfo contextInfo);
 }

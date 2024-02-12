@@ -16,4 +16,46 @@
  */
 package com.broadleafcommerce.bulkoperations.service.provider;
 
-public interface CatalogProvider {}
+import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
+
+import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
+import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
+import com.broadleafcommerce.bulk.v2.domain.InitializeItemResponse;
+import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOp;
+import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
+import com.broadleafcommerce.bulkoperations.domain.SearchResponse;
+import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
+
+import java.util.List;
+
+public interface CatalogProvider<I extends CatalogItem> {
+
+    /**
+     *
+     * @param bulkOperationRequest
+     * @param contextInfo
+     * @return
+     */
+    BulkOperationResponse createBulkOperation(BulkOperationRequest bulkOperationRequest,
+            ContextInfo contextInfo);
+
+    /**
+     *
+     * @param operationType
+     * @param entityType
+     * @return
+     */
+    List<SupportedBulkOp> getSupportedBulkOperations(String operationType,
+            @Nullable String entityType);
+
+    /**
+     *
+     * @return
+     */
+    InitializeItemResponse initializeItems(SearchResponse<? extends CatalogItem> catalogItems,
+            BulkOperationRequest bulkOperationRequest,
+            BulkOperationResponse bulkOperationResponse,
+            Pageable pageable,
+            ContextInfo contextInfo);
+}

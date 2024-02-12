@@ -4,18 +4,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.broadleafcommerce.microservices</groupId>
-        <artifactId>broadleaf-services-common-dependent-parent</artifactId>
+        <artifactId>broadleaf-services-jpa-only-parent</artifactId>
         <version>2.0.1-SNAPSHOT</version>
         <relativePath />
     </parent>
-    <artifactId>broadleaf-bulk-operations-service-parent</artifactId>
+    <artifactId>broadleaf-bulk-operations-services-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
     <name>Broadleaf Bulk Operations Service Parent</name>
     <description>Bulk Operations Parent</description>
 
     <properties>
-        <revision>2.1.0-SNAPSHOT</revision>
+        <revision>1.0.0-SNAPSHOT</revision>
     </properties>
 
     <repositories>

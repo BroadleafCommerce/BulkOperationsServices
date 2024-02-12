@@ -1,0 +1,14 @@
+spring:
+  liquibase:
+    enabled: false
+  cache:
+    type: none
+  jpa:
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.HSQLDialect
+logging:
+  level:
+    root: WARN

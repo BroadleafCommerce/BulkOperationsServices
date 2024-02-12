@@ -1,0 +1,35 @@
+spring:
+  cloud:
+    stream:
+      bindings:
+        initializeItemsRequestOutput:
+          destination: bulkOperationsInitializeItemsRequest
+        initializeItemsRequestInput:
+          group: bulk-operations-initialize-items
+          destination: bulkOperationsInitializeItemsRequest
+        createSandboxRequestOutput:
+          destination: createSandboxRequest
+        processBulkOperationRequestOutput:
+          destination: processBulkOperationRequest
+  security:
+    oauth2:
+      client:
+        registration:
+          bulkopsclient:
+            authorization-grant-type: client_credentials
+            client-id: bulkopsclient
+            client-secret: bulk_ops_secret
+        provider:
+          bulkopsclient:
+            token-uri: https://localhost:8443/oauth/token
+
+broadleaf:
+  bulkoperations:
+    catalogprovider:
+      url: https://localhost:8447/catalog
+      bulk-operation-uri: /bulk-operation
+      bulk-operation-items-uri: /items
+      supported-bulk-ops-uri: /catalog-bulk-ops/supported
+    searchprovider:
+      url: https://localhost:8457/search
+      search-uri: /catalog-search

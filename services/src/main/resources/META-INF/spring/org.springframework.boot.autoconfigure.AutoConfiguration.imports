@@ -1,0 +1,4 @@
+com.broadleafcommerce.bulkoperations.provider.jpa.autoconfigure.BulkOperationsJpaAutoConfiguration
+com.broadleafcommerce.bulkoperations.web.autoconfigure.BulkOperationsWebAutoConfiguration
+com.broadleafcommerce.bulkoperations.service.autoconfigure.BulkOperationsServiceAutoConfiguration
+com.broadleafcommerce.bulkoperations.messaging.autoconfigure.BulkOpsMessagingAutoConfiguration
