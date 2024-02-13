@@ -16,4 +16,23 @@
  */
 package com.broadleafcommerce.bulkoperations.service;
 
-public interface BulkOperationsService {}
+import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
+import com.broadleafcommerce.common.error.validation.ValidationException;
+import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
+
+/**
+ * Orchestration service for Bulk Operations.
+ */
+public interface BulkOperationsService {
+
+    /**
+     * Validates the {@link BulkOperationRequest}, throwing a {@link ValidationException} in the
+     * event that there is a validation failure.
+     *
+     * @param bulkOperationRequest the user-supplied bulk operation request
+     * @param contextInfo context information surrounding sandboxing/multitenant state
+     * @throws ValidationException in the event that there is a validation failure
+     */
+    void validateBulkOperationRequest(BulkOperationRequest bulkOperationRequest,
+            ContextInfo contextInfo);
+}

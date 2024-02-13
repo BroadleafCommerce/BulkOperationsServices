@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
+import com.broadleafcommerce.bulkoperations.service.BulkOperationsService;
 import com.broadleafcommerce.bulkoperations.service.handler.BulkOperationHandler;
 import com.broadleafcommerce.bulkoperations.web.exception.BulkOperationHandlerNotFoundException;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
@@ -50,6 +51,9 @@ public class BulkOperationsEndpoint {
     public static final String BASE_URI = "/bulk-operations";
 
     @Getter(AccessLevel.PROTECTED)
+    private final BulkOperationsService bulkOperationsService;
+
+    @Getter(AccessLevel.PROTECTED)
     private final List<BulkOperationHandler> bulkOperationHandlers;
 
     @FrameworkPostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -57,15 +61,22 @@ public class BulkOperationsEndpoint {
     public BulkOperationResponse createBulkOperation(HttpServletRequest request,
             @ContextOperation(value = OperationType.CREATE) ContextInfo context,
             @RequestBody BulkOperationRequest bulkOperationRequest) {
-        // TODO Validate that the required info is populated
-        // validateBulkOperationRequest();
+        bulkOperationsService.validateBulkOperationRequest(bulkOperationRequest, context);
 
         for (BulkOperationHandler bulkOperationHandler : bulkOperationHandlers) {
             if (bulkOperationHandler.canHandle(bulkOperationRequest.getOperationType(),
                     bulkOperationRequest.getEntityType())) {
                 return bulkOperationHandler.handle(bulkOperationRequest, context);
             } else {
-                throw new BulkOperationHandlerNotFoundException();
+                log.warn("No handler was found for operation type {} and entity type {}",
+                        bulkOperationRequest.getOperationType(),
+                        bulkOperationRequest.getEntityType());
+
+                throw new BulkOperationHandlerNotFoundException(
+                        String.format(
+                                "No handler was found for operation type %s and entity type %s",
+                                bulkOperationRequest.getOperationType(),
+                                bulkOperationRequest.getEntityType()));
             }
         }
         return null;

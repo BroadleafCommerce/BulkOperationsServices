@@ -19,6 +19,7 @@ package com.broadleafcommerce.bulkoperations.service.autoconfigure;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -40,6 +41,8 @@ import com.broadleafcommerce.bulk.v2.messaging.sandbox.CreateSandboxRequestProdu
 import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.oauth2.client.endpoint.OAuth2ClientCredentialsAccessTokenResponseClient;
 import com.broadleafcommerce.bulkoperations.oauth2.client.web.SynchronizedDelegatingOAuth2AuthorizedClientManager;
+import com.broadleafcommerce.bulkoperations.service.BulkOperationsService;
+import com.broadleafcommerce.bulkoperations.service.DefaultBulkOperationsService;
 import com.broadleafcommerce.bulkoperations.service.environment.RouteConstants;
 import com.broadleafcommerce.bulkoperations.service.handler.BulkOperationHandler;
 import com.broadleafcommerce.bulkoperations.service.handler.CatalogBulkOperationHandler;
@@ -49,10 +52,12 @@ import com.broadleafcommerce.bulkoperations.service.provider.external.ExternalCa
 import com.broadleafcommerce.bulkoperations.service.provider.external.ExternalCatalogProvider;
 import com.broadleafcommerce.bulkoperations.service.provider.external.ExternalSearchProperties;
 import com.broadleafcommerce.bulkoperations.service.provider.external.ExternalSearchProvider;
+import com.broadleafcommerce.bulkoperations.service.provider.utils.ProviderUtils;
 import com.broadleafcommerce.common.extension.TypeFactory;
 import com.broadleafcommerce.common.extension.data.DataRouteSupporting;
 import com.broadleafcommerce.common.extension.data.PackageDataRouteSupplier;
 import com.broadleafcommerce.common.messaging.notification.DetachedDurableMessageSender;
+import com.broadleafcommerce.data.tracking.core.context.ContextInfoCustomizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
@@ -209,15 +214,17 @@ public class BulkOperationsServiceAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     BulkOperationHandler catalogBulkOperationHandler(
-            CatalogProvider<? extends CatalogItem> catalogProvider,
+            CatalogProvider catalogProvider,
             DetachedDurableMessageSender sender,
             CreateSandboxRequestProducer createSandboxRequestProducer,
             BulkOpsInitializeItemsRequestProducer bulkOpsInitializeItemsRequestProducer,
+            MessageSource messageSource,
             TypeFactory typeFactory) {
         return new CatalogBulkOperationHandler(catalogProvider,
                 sender,
                 createSandboxRequestProducer,
                 bulkOpsInitializeItemsRequestProducer,
+                messageSource,
                 typeFactory);
     }
 
@@ -225,12 +232,12 @@ public class BulkOperationsServiceAutoConfiguration {
     @ConditionalOnMissingBean(name = "bulkOpsCatalogProvider")
     CatalogProvider<? extends CatalogItem> bulkOpsCatalogProvider(
             @Qualifier("bulkOperationsWebClient") WebClient bulkOpsWebClient,
-            ObjectMapper mapper,
             TypeFactory typeFactory,
+            ProviderUtils providerUtils,
             ExternalCatalogProperties properties) {
         return new ExternalCatalogProvider<>(bulkOpsWebClient,
-                mapper,
                 typeFactory,
+                providerUtils,
                 properties);
     }
 
@@ -238,12 +245,24 @@ public class BulkOperationsServiceAutoConfiguration {
     @ConditionalOnMissingBean(name = "bulkOpsSearchProvider")
     SearchProvider<? extends CatalogItem> bulkOpsSearchProvider(
             @Qualifier("bulkOperationsWebClient") WebClient bulkOpsWebClient,
-            ObjectMapper mapper,
             TypeFactory typeFactory,
+            ProviderUtils providerUtils,
             ExternalSearchProperties properties) {
         return new ExternalSearchProvider<>(bulkOpsWebClient,
-                mapper,
                 typeFactory,
+                providerUtils,
                 properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ProviderUtils bulkOpsProviderUtils(ObjectMapper objectMapper) {
+        return new ProviderUtils(objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public BulkOperationsService bulkOperationsService() {
+        return new DefaultBulkOperationsService();
     }
 }

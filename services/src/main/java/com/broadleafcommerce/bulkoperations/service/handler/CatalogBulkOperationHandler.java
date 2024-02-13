@@ -23,18 +23,19 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.Message;
 
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
-import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOp;
+import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOperation;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsInitializeItemsRequest;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsInitializeItemsRequestProducer;
 import com.broadleafcommerce.bulk.v2.messaging.sandbox.CreateSandboxRequest;
 import com.broadleafcommerce.bulk.v2.messaging.sandbox.CreateSandboxRequestProducer;
-import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.service.environment.BulkOperationsProviderProperties;
 import com.broadleafcommerce.bulkoperations.service.provider.CatalogProvider;
 import com.broadleafcommerce.common.extension.TypeFactory;
@@ -43,6 +44,7 @@ import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import io.azam.ulidj.ULID;
@@ -53,7 +55,7 @@ import lombok.Setter;
 public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
     @Getter(AccessLevel.PROTECTED)
-    private final CatalogProvider<? extends CatalogItem> catalogProvider;
+    private final CatalogProvider catalogProvider;
 
     @Getter(value = AccessLevel.PROTECTED)
     private final DetachedDurableMessageSender sender;
@@ -68,30 +70,34 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
     @Getter(AccessLevel.PROTECTED)
     private final BulkOpsInitializeItemsRequestProducer bulkOpsInitializeItemsRequestProducer;
 
-    @Getter(AccessLevel.PROTECTED)
-    private static final Random SECURE_RANDOM = new SecureRandom();
+    @Getter(value = AccessLevel.PROTECTED)
+    private final MessageSource messageSource;
+
+    protected static final Random SECURE_RANDOM = new SecureRandom();
 
     @Getter(AccessLevel.PROTECTED)
     private final TypeFactory typeFactory;
 
-    public CatalogBulkOperationHandler(CatalogProvider<? extends CatalogItem> catalogProvider,
+    public CatalogBulkOperationHandler(CatalogProvider catalogProvider,
             DetachedDurableMessageSender sender,
             CreateSandboxRequestProducer createSandboxRequestProducer,
             BulkOpsInitializeItemsRequestProducer bulkOpsInitializeItemsRequestProducer,
+            MessageSource messageSource,
             TypeFactory typeFactory) {
         this.catalogProvider = catalogProvider;
         this.sender = sender;
         this.createSandboxRequestProducer = createSandboxRequestProducer;
         this.bulkOpsInitializeItemsRequestProducer = bulkOpsInitializeItemsRequestProducer;
+        this.messageSource = messageSource;
         this.typeFactory = typeFactory;
     }
 
     @Override
     public boolean canHandle(String operationType, @Nullable String entityType) {
-        List<SupportedBulkOp> supportedBulkOp =
+        List<SupportedBulkOperation> supportedBulkOperation =
                 catalogProvider.getSupportedBulkOperations(operationType, entityType);
-        return supportedBulkOp.stream()
-                .map(SupportedBulkOp::getOperationType)
+        return supportedBulkOperation.stream()
+                .map(SupportedBulkOperation::getOperationType)
                 .anyMatch(opType -> StringUtils.equalsIgnoreCase(opType, operationType));
     }
 
@@ -106,7 +112,6 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
         response = catalogProvider.createBulkOperation(bulkOperationRequest, contextInfo);
 
-
         if (CollectionUtils.isEmpty(bulkOperationRequest.getInclusions())) {
             initializeItems(response, bulkOperationRequest, contextInfo);
         }
@@ -114,13 +119,21 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
         return response;
     }
 
+    /**
+     * Sends the {@link CreateSandboxRequest} message to create a sandbox to contain the catalog
+     * changes from this bulk operation.
+     *
+     * @param sandboxId the ID of the sandbox to create
+     * @param bulkOperationRequest the bulk operation request DTO
+     * @param contextInfo context information surrounding sandboxing/multitenant state
+     */
     protected void createSandboxForBulkOperation(String sandboxId,
             BulkOperationRequest bulkOperationRequest,
             ContextInfo contextInfo) {
-        String sandboxName =
-                String.format("BulkOperation - %s", bulkOperationRequest.getName());
-        String sandboxDescription =
-                String.format("Sandbox for BulkOperation - %s", bulkOperationRequest.getName());
+
+        String sandboxName = getSandboxName(bulkOperationRequest, contextInfo);
+        String sandboxDescription = getSandboxDescription(bulkOperationRequest, contextInfo);
+
         CreateSandboxRequest createSandboxRequest =
                 new CreateSandboxRequest(sandboxDescription,
                         sandboxId,
@@ -144,6 +157,33 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
         }
     }
 
+    protected String getSandboxName(BulkOperationRequest bulkOperationRequest,
+            ContextInfo contextInfo) {
+        return messageSource.getMessage("bulk-operations.sandbox.name",
+                new String[] {bulkOperationRequest.getName()},
+                "Bulk Operation - {0}",
+                Optional.ofNullable(contextInfo)
+                        .map(ContextInfo::getLocale)
+                        .orElse(LocaleContextHolder.getLocale()));
+    }
+
+    protected String getSandboxDescription(BulkOperationRequest bulkOperationRequest,
+            ContextInfo contextInfo) {
+        return messageSource.getMessage("bulk-operations.sandbox.description",
+                new String[] {bulkOperationRequest.getName()},
+                "Sandbox for BulkOperation - {0}",
+                Optional.ofNullable(contextInfo)
+                        .map(ContextInfo::getLocale)
+                        .orElse(LocaleContextHolder.getLocale()));
+    }
+
+    /**
+     * Sends the {@link BulkOpsInitializeItemsRequest} message to initialize bulk operation items.
+     *
+     * @param bulkOperationResponse the response DTO for the bulk operation creation
+     * @param bulkOperationRequest the request DTO containing search and operation information
+     * @param contextInfo context information surrounding sandboxing/multitenant state
+     */
     protected void initializeItems(BulkOperationResponse bulkOperationResponse,
             BulkOperationRequest bulkOperationRequest,
             ContextInfo contextInfo) {

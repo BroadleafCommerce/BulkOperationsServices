@@ -19,6 +19,10 @@ package com.broadleafcommerce.bulkoperations.messaging;
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.messaging.SubscribableChannel;
 
+/**
+ * Spring cloud stream messaging interface for receiving requests to initialize bulk operation
+ * items.
+ */
 public interface BulkOpsInitializeItemsConsumer {
 
     String CHANNEL = "initializeItemsRequestInput";

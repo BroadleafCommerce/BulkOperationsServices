@@ -18,6 +18,7 @@ package com.broadleafcommerce.bulkoperations.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Map;
 
@@ -42,14 +43,21 @@ public interface CatalogItem {
      * @param value Value of the additional attribute
      */
     @JsonAnySetter
-    void addAttribute(String name, Object value);
+    default void addAdditionalAttribute(String name, Object value) {
+        getAdditionalAttributes().put(name, value);
+    }
 
     /**
      * Return any additional attributes passed in the request not matching any defined properties.
      *
      * @return any additional attributes passed in the request not matching any defined properties.
      */
+    @JsonIgnore
+    Map<String, Object> getAdditionalAttributes();
+
     @JsonAnyGetter
-    Map<String, Object> getAttributes();
+    default Object getAdditionalAttribute(String name) {
+        return getAdditionalAttributes().get(name);
+    }
 
 }

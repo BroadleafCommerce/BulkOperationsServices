@@ -39,12 +39,22 @@ public class ExternalCatalogProperties {
     private String bulkOperationUri;
 
     /**
-     * The context path to the bulk operation items
+     * The context path to the bulk operation items endpoint
      */
     @Getter
     @Setter
     private String bulkOperationItemsUri;
 
+    /**
+     * The context path to update the bulk operation total records
+     */
+    @Getter
+    @Setter
+    private String bulkOperationTotalRecordsUri;
+
+    /**
+     * The context path to the supported bulk operations endpoint
+     */
     @Getter
     @Setter
     private String supportedBulkOpsUri;

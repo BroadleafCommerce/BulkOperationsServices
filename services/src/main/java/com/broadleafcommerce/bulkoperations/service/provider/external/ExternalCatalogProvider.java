@@ -33,14 +33,14 @@ import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
 import com.broadleafcommerce.bulk.v2.domain.InitializeItemRequest;
 import com.broadleafcommerce.bulk.v2.domain.InitializeItemResponse;
-import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOp;
+import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOperation;
 import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.domain.SearchResponse;
 import com.broadleafcommerce.bulkoperations.exception.ProviderApiException;
 import com.broadleafcommerce.bulkoperations.service.provider.CatalogProvider;
+import com.broadleafcommerce.bulkoperations.service.provider.utils.ProviderUtils;
 import com.broadleafcommerce.common.extension.TypeFactory;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,17 +51,26 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-public class ExternalCatalogProvider<I extends CatalogItem>
-        extends AbstractExternalProvider implements CatalogProvider<I> {
+public class ExternalCatalogProvider<I extends CatalogItem> implements CatalogProvider<I> {
+
+    @Getter(AccessLevel.PROTECTED)
+    private final WebClient webClient;
+
+    @Getter(AccessLevel.PROTECTED)
+    private final TypeFactory typeFactory;
+
+    @Getter(AccessLevel.PROTECTED)
+    private final ProviderUtils providerUtils;
 
     @Getter(AccessLevel.PROTECTED)
     private final ExternalCatalogProperties properties;
 
     public ExternalCatalogProvider(WebClient webClient,
-            ObjectMapper objectMapper,
             TypeFactory typeFactory,
-            ExternalCatalogProperties properties) {
-        super(webClient, objectMapper, typeFactory);
+            ProviderUtils providerUtils, ExternalCatalogProperties properties) {
+        this.webClient = webClient;
+        this.typeFactory = typeFactory;
+        this.providerUtils = providerUtils;
         this.properties = properties;
     }
 
@@ -70,13 +79,13 @@ public class ExternalCatalogProvider<I extends CatalogItem>
             ContextInfo contextInfo) {
         final String createBulkOperationUrl = getCreateBulkOperationUrl(contextInfo);
 
-        return executeRequest(() -> getWebClient()
+        return providerUtils.executeRequest(() -> getWebClient()
                 .post()
                 .uri(createBulkOperationUrl)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(bulkOperationRequest)
-                .headers(httpHeaders -> httpHeaders.putAll(getHeaders(contextInfo)))
+                .headers(httpHeaders -> httpHeaders.putAll(providerUtils.getHeaders(contextInfo)))
                 .attributes(clientRegistrationId(getServiceClient()))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError,
@@ -87,11 +96,11 @@ public class ExternalCatalogProvider<I extends CatalogItem>
     }
 
     @Override
-    public List<SupportedBulkOp> getSupportedBulkOperations(String operationType,
+    public List<SupportedBulkOperation> getSupportedBulkOperations(String operationType,
             @Nullable String entityType) {
         final String supportedBulkOpsUrl = getSupportedBulkOpsUrl(operationType, entityType);
 
-        return executeRequest(() -> getWebClient()
+        return providerUtils.executeRequest(() -> getWebClient()
                 .get()
                 .uri(supportedBulkOpsUrl)
                 .accept(MediaType.APPLICATION_JSON)
@@ -100,13 +109,13 @@ public class ExternalCatalogProvider<I extends CatalogItem>
                 .onStatus(HttpStatusCode::isError,
                         response -> response.createException().flatMap(
                                 exception -> Mono.just(new ProviderApiException(exception))))
-                .bodyToMono(new ParameterizedTypeReference<List<SupportedBulkOp>>() {})
+                .bodyToMono(new ParameterizedTypeReference<List<SupportedBulkOperation>>() {})
                 .block());
     }
 
     @Override
     public InitializeItemResponse initializeItems(
-            SearchResponse<? extends CatalogItem> searchResponse,
+            SearchResponse<I> searchResponse,
             BulkOperationRequest bulkOperationRequest,
             BulkOperationResponse bulkOperationResponse,
             Pageable pageable,
@@ -122,12 +131,12 @@ public class ExternalCatalogProvider<I extends CatalogItem>
         InitializeItemRequest itemRequest = getTypeFactory().get(InitializeItemRequest.class);
         itemRequest.setEntityContextIds(catalogItemIds);
 
-        return executeRequest(() -> getWebClient()
+        return providerUtils.executeRequest(() -> getWebClient()
                 .post()
                 .uri(initializeBulkOperationItemsUrl)
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(itemRequest)
-                .headers(httpHeaders -> httpHeaders.putAll(getHeaders(contextInfo)))
+                .headers(httpHeaders -> httpHeaders.putAll(providerUtils.getHeaders(contextInfo)))
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .attributes(clientRegistrationId(getServiceClient()))
                 .retrieve()
@@ -137,6 +146,28 @@ public class ExternalCatalogProvider<I extends CatalogItem>
                 .bodyToMono(InitializeItemResponse.class)
                 .block());
     }
+
+    @Override
+    public BulkOperationResponse updateBulkOperationTotalRecordCount(long totalRecordCount,
+            BulkOperationResponse bulkOperationResponse,
+            ContextInfo contextInfo) {
+        final String updateBulkOperationTotalRecordCountUrl =
+                getUpdateBulkOperationTotalRecordCountUrl(totalRecordCount, bulkOperationResponse);
+
+        return providerUtils.executeRequest(() -> getWebClient()
+                .patch()
+                .uri(updateBulkOperationTotalRecordCountUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders -> httpHeaders.putAll(providerUtils.getHeaders(contextInfo)))
+                .attributes(clientRegistrationId(getServiceClient()))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError,
+                        response -> response.createException().flatMap(
+                                exception -> Mono.just(new ProviderApiException(exception))))
+                .bodyToMono(BulkOperationResponse.class)
+                .block());
+    }
+
 
     protected String getCreateBulkOperationUrl(@Nullable ContextInfo contextInfo) {
         return fromHttpUrl(properties.getUrl())
@@ -163,7 +194,17 @@ public class ExternalCatalogProvider<I extends CatalogItem>
                 .path(properties.getBulkOperationUri())
                 .pathSegment(bulkOperationId)
                 .path(properties.getBulkOperationItemsUri())
-                .queryParams(pageableToParams(pageable))
+                .queryParams(providerUtils.pageableToParams(pageable))
+                .toUriString();
+    }
+
+    protected String getUpdateBulkOperationTotalRecordCountUrl(long totalRecordCount,
+            BulkOperationResponse bulkOperationResponse) {
+        return fromHttpUrl(properties.getUrl())
+                .path(properties.getBulkOperationUri())
+                .pathSegment(bulkOperationResponse.getId())
+                .path(properties.getBulkOperationTotalRecordsUri())
+                .queryParam("totalRecordsCount", totalRecordCount)
                 .toUriString();
     }
 

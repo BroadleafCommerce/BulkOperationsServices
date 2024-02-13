@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
+import com.broadleafcommerce.bulk.v2.domain.InitializeItemResponse;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsInitializeItemsRequest;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsProcessRequest;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsProcessRequestProducer;
@@ -44,18 +45,22 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ * A listener that accepts a {@link BulkOpsInitializeItemsRequest} in order to initialize bulk
+ * operation items.
+ */
 @RequiredArgsConstructor
 @DataRouteByKey(RouteConstants.Persistence.BULK_OPS_ROUTE_KEY)
-public class InitializeBulkOperationItemsListener {
+public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
 
     @Getter(value = AccessLevel.PROTECTED)
     private final InitializeBulkOperationItemsProperties initializeBulkOperationItemsProperties;
 
     @Getter(AccessLevel.PROTECTED)
-    private final CatalogProvider<? extends CatalogItem> catalogProvider;
+    private final CatalogProvider<CI> catalogProvider;
 
     @Getter(AccessLevel.PROTECTED)
-    private final SearchProvider<? extends CatalogItem> searchProvider;
+    private final SearchProvider<CI> searchProvider;
 
     @Getter(AccessLevel.PROTECTED)
     private final IdempotentMessageConsumptionService idempotentConsumptionService;
@@ -81,37 +86,34 @@ public class InitializeBulkOperationItemsListener {
         int batchSize = initializeBulkOperationItemsProperties.getBatchSize();
         int currentBatchCount;
         int currentPageNumber = 0;
-        int totalItemRecords = 0;
+        long totalItemRecords = 0;
 
         BulkOpsInitializeItemsRequest request = message.getPayload();
-
-        // TODO update status to initializing items
-        // catalogProvider.updateBulkOperationStatus()
 
         do {
             Pageable pageable = new DefaultPageRequest(currentPageNumber, batchSize);
 
-            SearchResponse<? extends CatalogItem> searchResponse =
+            SearchResponse<CI> searchResponse =
                     searchProvider.getSearchResults(request.getBulkOperationRequest(),
                             request.getBulkOperationResponse(),
                             pageable,
                             request.getContextInfo());
 
             if (!searchResponse.getContent().isEmpty()) {
-                catalogProvider.initializeItems(searchResponse,
+                InitializeItemResponse response = catalogProvider.initializeItems(searchResponse,
                         request.getBulkOperationRequest(),
                         request.getBulkOperationResponse(),
                         pageable,
                         request.getContextInfo());
+                totalItemRecords = totalItemRecords + response.getItemResponses().size();
             }
 
             currentPageNumber++;
             currentBatchCount = searchResponse.getContent().size();
-            totalItemRecords = totalItemRecords + currentBatchCount;
         } while (currentBatchCount == batchSize);
 
-        // TODO set total records on bulk ops
-        // catalogProvider.updateBulkOperationTotalRecordCount()
+        catalogProvider.updateBulkOperationTotalRecordCount(totalItemRecords,
+                request.getBulkOperationResponse(), request.getContextInfo());
 
         // finally, send process message
         sendProcessBulkOperationRequest(request);

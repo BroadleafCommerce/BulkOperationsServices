@@ -79,7 +79,7 @@ public class SearchResponse<T> implements Serializable {
      * @return any additional attributes passed in the request not matching any defined properties.
      */
     @JsonAnyGetter
-    public Map<String, Object> getAttribute() {
-        return attributes;
+    public Object getAttribute(String name) {
+        return attributes.get(name);
     }
 }

@@ -17,15 +17,23 @@
 package com.broadleafcommerce.bulkoperations.service.provider;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
 import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.domain.SearchResponse;
+import com.broadleafcommerce.bulkoperations.exception.ProviderApiException;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
 
+/**
+ * Provider for interfacing with operations around catalog search. Typically utilizes
+ * {@link WebClient} to make requests to an external REST API.
+ *
+ * @param <I> The type of the results expected in the {@link SearchResponse}. Should extend
+ *        {@link CatalogItem}.
+ */
 public interface SearchProvider<I extends CatalogItem> {
-
 
     /**
      * Performs a search for the provided request.

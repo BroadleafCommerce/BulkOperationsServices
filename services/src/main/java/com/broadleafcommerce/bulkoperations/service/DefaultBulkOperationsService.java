@@ -16,4 +16,27 @@
  */
 package com.broadleafcommerce.bulkoperations.service;
 
-public class DefaultBulkOperationsService implements BulkOperationsService {}
+import static org.springframework.validation.ValidationUtils.rejectIfEmptyOrWhitespace;
+
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+
+import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
+import com.broadleafcommerce.common.error.validation.ValidationException;
+import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
+
+public class DefaultBulkOperationsService implements BulkOperationsService {
+
+    public void validateBulkOperationRequest(BulkOperationRequest bulkOperationRequest,
+            ContextInfo contextInfo) {
+        Errors errors =
+                new BeanPropertyBindingResult(bulkOperationRequest, "bulkOperationRequest");
+
+        rejectIfEmptyOrWhitespace(errors, "operationType", "missingOperationType",
+                "Operation type is required");
+
+        if (errors.hasErrors()) {
+            throw new ValidationException(errors);
+        }
+    }
+}

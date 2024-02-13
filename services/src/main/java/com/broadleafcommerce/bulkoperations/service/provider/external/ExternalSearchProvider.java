@@ -38,9 +38,9 @@ import com.broadleafcommerce.bulkoperations.domain.Product;
 import com.broadleafcommerce.bulkoperations.domain.SearchResponse;
 import com.broadleafcommerce.bulkoperations.exception.ProviderApiException;
 import com.broadleafcommerce.bulkoperations.service.provider.SearchProvider;
+import com.broadleafcommerce.bulkoperations.service.provider.utils.ProviderUtils;
 import com.broadleafcommerce.common.extension.TypeFactory;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -50,17 +50,28 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-public class ExternalSearchProvider<I extends CatalogItem> extends AbstractExternalProvider
+public class ExternalSearchProvider<I extends CatalogItem>
         implements SearchProvider<I> {
+
+    @Getter(AccessLevel.PROTECTED)
+    private final WebClient webClient;
+
+    @Getter(AccessLevel.PROTECTED)
+    private final TypeFactory typeFactory;
+
+    @Getter(AccessLevel.PROTECTED)
+    private final ProviderUtils providerUtils;
 
     @Getter(AccessLevel.PROTECTED)
     private final ExternalSearchProperties properties;
 
     public ExternalSearchProvider(WebClient webClient,
-            ObjectMapper objectMapper,
             TypeFactory typeFactory,
+            ProviderUtils providerUtils,
             ExternalSearchProperties properties) {
-        super(webClient, objectMapper, typeFactory);
+        this.webClient = webClient;
+        this.typeFactory = typeFactory;
+        this.providerUtils = providerUtils;
         this.properties = properties;
     }
 
@@ -83,7 +94,7 @@ public class ExternalSearchProvider<I extends CatalogItem> extends AbstractExter
                         .queryParam("page", String.valueOf(pageable.getPageNumber()))
                         .queryParam("type", "PRODUCT")
                         .toUriString())
-                .headers(headers -> headers.putAll(getHeaders(contextInfo)))
+                .headers(headers -> headers.putAll(providerUtils.getHeaders(contextInfo)))
                 .accept(MediaType.APPLICATION_JSON)
                 .attributes(clientRegistrationId(getServiceClient()))
                 .retrieve()
@@ -104,16 +115,16 @@ public class ExternalSearchProvider<I extends CatalogItem> extends AbstractExter
 
         int filterIndex = 0;
         for (SearchFilter filter : request.getFilters()) {
-            params.put("filter[" + filterIndex + "].name", List.of(filter.getName()));
+            params.put("filters[" + filterIndex + "].name", List.of(filter.getName()));
 
 
-            params.put("filter[" + filterIndex + "].values", filter.getValues());
+            params.put("filters[" + filterIndex + "].values", filter.getValues());
 
             int rangeIndex = 0;
             for (SearchFilterRangeValue rangeValue : filter.getRanges()) {
-                params.put("filter[" + filterIndex + "].ranges[" + rangeIndex + "].minValue",
+                params.put("filters[" + filterIndex + "].ranges[" + rangeIndex + "].minValue",
                         List.of(rangeValue.getMinValue()));
-                params.put("filter[" + filterIndex + "].ranges[" + rangeIndex + "].maxValue",
+                params.put("filters[" + filterIndex + "].ranges[" + rangeIndex + "].maxValue",
                         List.of(rangeValue.getMaxValue()));
                 rangeIndex++;
             }

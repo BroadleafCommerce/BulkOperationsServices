@@ -29,6 +29,7 @@ broadleaf:
       url: https://localhost:8447/catalog
       bulk-operation-uri: /bulk-operation
       bulk-operation-items-uri: /items
+      bulk-operation-total-records-uri: /total-records
       supported-bulk-ops-uri: /catalog-bulk-ops/supported
     searchprovider:
       url: https://localhost:8457/search

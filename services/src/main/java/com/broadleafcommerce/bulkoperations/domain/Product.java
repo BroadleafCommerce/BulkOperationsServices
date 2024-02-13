@@ -18,7 +18,7 @@ package com.broadleafcommerce.bulkoperations.domain;
 
 import com.broadleafcommerce.common.extension.RequestView;
 import com.broadleafcommerce.common.extension.ResponseView;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -27,20 +27,32 @@ import java.util.Map;
 
 import lombok.Data;
 
+/**
+ * DTO for a Broadleaf Product.
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonView({RequestView.class, ResponseView.class})
 public class Product implements CatalogItem {
 
+    /**
+     * The context ID of the product
+     */
     private String id;
 
+    /**
+     * The SKU of the product.
+     */
     private String sku;
-    private String pricingKey;
-    private Map<String, Object> attributes = new HashMap<>();
 
-    @Override
-    @JsonAnySetter
-    public void addAttribute(String name, Object value) {
-        attributes.put(name, value);
-    }
+    /**
+     * The pricing key of the product.
+     */
+    private String pricingKey;
+
+    /**
+     * Map of any additional attributes for the product.
+     */
+    @JsonIgnore
+    private Map<String, Object> additionalAttributes = new HashMap<>();
 }
