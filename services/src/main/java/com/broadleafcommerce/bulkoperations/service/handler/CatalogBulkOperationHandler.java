@@ -109,6 +109,7 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
         String sandboxId = ULID.random(SECURE_RANDOM);
         createSandboxForBulkOperation(sandboxId, bulkOperationRequest, contextInfo);
         bulkOperationRequest.setSandboxId(sandboxId);
+        bulkOperationRequest.setAuthor(contextInfo.getAuthor());
 
         response = catalogProvider.createBulkOperation(bulkOperationRequest, contextInfo);
 
