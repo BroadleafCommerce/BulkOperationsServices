@@ -137,6 +137,7 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
         CreateSandboxRequest createSandboxRequest =
                 new CreateSandboxRequest(sandboxDescription,
+                        generateRandomHexColor(),
                         sandboxId,
                         sandboxName,
                         contextInfo.getContextRequest().getApplicationId(),
@@ -156,6 +157,11 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
             createSandboxRequestProducer.createSandboxRequestOutput().send(message);
         }
+    }
+
+    protected String generateRandomHexColor() {
+        int randomWithinHexBound = SECURE_RANDOM.nextInt(0xffffff + 1);
+        return String.format("#%06x", randomWithinHexBound);
     }
 
     protected String getSandboxName(BulkOperationRequest bulkOperationRequest,
