@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationResponse;
+import com.broadleafcommerce.bulk.v2.domain.BulkOperationTotalRecordCountRequest;
 import com.broadleafcommerce.bulk.v2.domain.InitializeItemRequest;
 import com.broadleafcommerce.bulk.v2.domain.InitializeItemResponse;
 import com.broadleafcommerce.bulk.v2.domain.SupportedBulkOperation;
@@ -154,11 +155,16 @@ public class ExternalCatalogProvider<I extends CatalogItem> implements CatalogPr
         final String updateBulkOperationTotalRecordCountUrl =
                 getUpdateBulkOperationTotalRecordCountUrl(bulkOperationResponse);
 
+        BulkOperationTotalRecordCountRequest request =
+                typeFactory.get(BulkOperationTotalRecordCountRequest.class);
+        request.setTotalRecordCount(totalRecordCount);
+
         return providerUtils.executeRequest(() -> getWebClient()
                 .patch()
                 .uri(updateBulkOperationTotalRecordCountUrl)
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(totalRecordCount)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
                 .headers(httpHeaders -> httpHeaders.putAll(providerUtils.getHeaders(contextInfo)))
                 .attributes(clientRegistrationId(getServiceClient()))
                 .retrieve()
