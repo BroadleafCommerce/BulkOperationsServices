@@ -26,9 +26,9 @@
     </repositories>
 
     <scm>
-        <connection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsService.git</connection>
-        <developerConnection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsService.git</developerConnection>
-        <url>https://github.com/BroadleafCommerce/BulkOperationsService</url>
+        <connection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsServices.git</connection>
+        <developerConnection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsServices.git</developerConnection>
+        <url>https://github.com/BroadleafCommerce/BulkOperationsServices</url>
         <tag>HEAD</tag>
     </scm>
 

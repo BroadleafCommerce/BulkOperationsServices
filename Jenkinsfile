@@ -1,7 +1,7 @@
 mavenBuild {
   extraBuildProfiles = '-Pdeptrack'
   dependencyCheck = 'enabled'
-  dependencyCheckBomName = 'BulkOperationsService'
+  dependencyCheckBomName = 'BulkOperationsServices'
   extraDeployProfiles = '-Pdocker'
   javadocsDirectories = ['services/target']
   buildAgentLabel = 'build-jdk17'
