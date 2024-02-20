@@ -34,6 +34,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonView({RequestView.class, ResponseView.class})
 public class Product implements CatalogItem {
+    private static final long serialVersionUID = 1L;
 
     /**
      * The context ID of the product

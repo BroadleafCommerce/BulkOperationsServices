@@ -19,7 +19,6 @@ package com.broadleafcommerce.bulkoperations.messaging;
 import static com.broadleafcommerce.bulkoperations.service.environment.RouteConstants.Persistence.BULK_OPS_ROUTE_KEY;
 import static com.broadleafcommerce.common.messaging.service.DefaultMessageLockService.MESSAGE_IDEMPOTENCY_KEY;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.data.domain.Pageable;
 import org.springframework.integration.support.MessageBuilder;
@@ -43,12 +42,13 @@ import com.broadleafcommerce.data.tracking.core.filtering.DefaultPageRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A listener that accepts a {@link BulkOpsInitializeItemsRequest} in order to initialize bulk
  * operation items.
  */
+@Slf4j
 @RequiredArgsConstructor
 @DataRouteByKey(RouteConstants.Persistence.BULK_OPS_ROUTE_KEY)
 public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
@@ -72,8 +72,7 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
     private final BulkOpsProcessRequestProducer processRequestProducer;
 
     @Getter(AccessLevel.PROTECTED)
-    @Setter(onMethod_ = {@Autowired})
-    private BulkOperationsProviderProperties bulkOperationsProviderProperties;
+    private final BulkOperationsProviderProperties bulkOperationsProviderProperties;
 
 
     @StreamListener(BulkOpsInitializeItemsConsumer.CHANNEL)
@@ -105,7 +104,7 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
                         request.getBulkOperationResponse(),
                         pageable,
                         request.getContextInfo());
-                totalItemRecords = totalItemRecords + response.getItemResponses().size();
+                totalItemRecords += response.getItemResponses().size();
             }
 
             currentPageNumber++;
@@ -130,6 +129,9 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
             sender.send(processRequest, BulkOpsProcessRequestProducer.TYPE,
                     bulkOpsId, BULK_OPS_ROUTE_KEY);
         } else {
+            log.debug("Durable sending for bulk operations is disabled. " +
+                    "This occurs if the database provider is set to 'none' or if the sender does not exist.");
+
             Message<BulkOpsProcessRequest> processRequestMessage =
                     MessageBuilder.withPayload(processRequest)
                             .setHeaderIfAbsent(MESSAGE_IDEMPOTENCY_KEY, bulkOpsId)

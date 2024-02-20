@@ -18,6 +18,7 @@ package com.broadleafcommerce.bulkoperations.service;
 
 import static org.springframework.validation.ValidationUtils.rejectIfEmptyOrWhitespace;
 
+import org.springframework.lang.Nullable;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
@@ -28,7 +29,7 @@ import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
 public class DefaultBulkOperationsService implements BulkOperationsService {
 
     public void validateBulkOperationRequest(BulkOperationRequest bulkOperationRequest,
-            ContextInfo contextInfo) {
+            @Nullable ContextInfo contextInfo) {
         Errors errors =
                 new BeanPropertyBindingResult(bulkOperationRequest, "bulkOperationRequest");
 

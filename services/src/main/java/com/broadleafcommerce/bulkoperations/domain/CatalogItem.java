@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.util.Map;
 
 
@@ -27,7 +28,7 @@ import java.util.Map;
  * A reference to a catalog item, typically used as a holder for information communicated from an
  * external service.
  */
-public interface CatalogItem {
+public interface CatalogItem extends Serializable {
 
     /**
      * The ID of the CatalogItem.

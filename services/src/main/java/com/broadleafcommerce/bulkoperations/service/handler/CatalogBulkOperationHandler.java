@@ -22,7 +22,6 @@ import static com.broadleafcommerce.common.messaging.service.DefaultMessageLockS
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.integration.support.MessageBuilder;
@@ -36,6 +35,7 @@ import com.broadleafcommerce.bulk.v2.messaging.BulkOpsInitializeItemsRequest;
 import com.broadleafcommerce.bulk.v2.messaging.BulkOpsInitializeItemsRequestProducer;
 import com.broadleafcommerce.bulk.v2.messaging.sandbox.CreateSandboxRequest;
 import com.broadleafcommerce.bulk.v2.messaging.sandbox.CreateSandboxRequestProducer;
+import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.service.environment.BulkOperationsProviderProperties;
 import com.broadleafcommerce.bulkoperations.service.provider.CatalogProvider;
 import com.broadleafcommerce.common.extension.TypeFactory;
@@ -50,19 +50,19 @@ import java.util.Random;
 import io.azam.ulidj.ULID;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
     @Getter(AccessLevel.PROTECTED)
-    private final CatalogProvider catalogProvider;
+    private final CatalogProvider<? extends CatalogItem> catalogProvider;
 
     @Getter(value = AccessLevel.PROTECTED)
     private final DetachedDurableMessageSender sender;
 
     @Getter(AccessLevel.PROTECTED)
-    @Setter(onMethod_ = {@Autowired})
-    private BulkOperationsProviderProperties properties;
+    private final BulkOperationsProviderProperties properties;
 
     @Getter(AccessLevel.PROTECTED)
     private final CreateSandboxRequestProducer createSandboxRequestProducer;
@@ -77,20 +77,6 @@ public class CatalogBulkOperationHandler implements BulkOperationHandler {
 
     @Getter(AccessLevel.PROTECTED)
     private final TypeFactory typeFactory;
-
-    public CatalogBulkOperationHandler(CatalogProvider catalogProvider,
-            DetachedDurableMessageSender sender,
-            CreateSandboxRequestProducer createSandboxRequestProducer,
-            BulkOpsInitializeItemsRequestProducer bulkOpsInitializeItemsRequestProducer,
-            MessageSource messageSource,
-            TypeFactory typeFactory) {
-        this.catalogProvider = catalogProvider;
-        this.sender = sender;
-        this.createSandboxRequestProducer = createSandboxRequestProducer;
-        this.bulkOpsInitializeItemsRequestProducer = bulkOpsInitializeItemsRequestProducer;
-        this.messageSource = messageSource;
-        this.typeFactory = typeFactory;
-    }
 
     @Override
     public boolean canHandle(String operationType, @Nullable String entityType) {

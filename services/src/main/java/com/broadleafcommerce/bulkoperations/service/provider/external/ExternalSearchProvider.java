@@ -46,10 +46,12 @@ import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ExternalSearchProvider<I extends CatalogItem>
         implements SearchProvider<I> {
 
@@ -64,16 +66,6 @@ public class ExternalSearchProvider<I extends CatalogItem>
 
     @Getter(AccessLevel.PROTECTED)
     private final ExternalSearchProperties properties;
-
-    public ExternalSearchProvider(WebClient webClient,
-            TypeFactory typeFactory,
-            ProviderUtils providerUtils,
-            ExternalSearchProperties properties) {
-        this.webClient = webClient;
-        this.typeFactory = typeFactory;
-        this.providerUtils = providerUtils;
-        this.properties = properties;
-    }
 
     @Override
     @SuppressWarnings("unchecked")

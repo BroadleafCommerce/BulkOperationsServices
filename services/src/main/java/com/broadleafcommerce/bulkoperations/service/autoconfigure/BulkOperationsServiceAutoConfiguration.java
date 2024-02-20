@@ -43,6 +43,7 @@ import com.broadleafcommerce.bulkoperations.oauth2.client.endpoint.OAuth2ClientC
 import com.broadleafcommerce.bulkoperations.oauth2.client.web.SynchronizedDelegatingOAuth2AuthorizedClientManager;
 import com.broadleafcommerce.bulkoperations.service.BulkOperationsService;
 import com.broadleafcommerce.bulkoperations.service.DefaultBulkOperationsService;
+import com.broadleafcommerce.bulkoperations.service.environment.BulkOperationsProviderProperties;
 import com.broadleafcommerce.bulkoperations.service.environment.RouteConstants;
 import com.broadleafcommerce.bulkoperations.service.handler.BulkOperationHandler;
 import com.broadleafcommerce.bulkoperations.service.handler.CatalogBulkOperationHandler;
@@ -161,19 +162,6 @@ public class BulkOperationsServiceAutoConfiguration {
         return null; // WebClient builder will initialize the default ClientHttpConnector
     }
 
-    // TODO: disable ssl verification for WebClient that uses this, remove this once
-    // https://github.com/BroadleafCommerce/MicroPM/issues/1323 is completed
-    private static ClientHttpConnector getDisabledSSLClientConnector() throws SSLException {
-        SslContext sslContext = SslContextBuilder
-                .forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build();
-        HttpClient httpClient = HttpClient
-                .create()
-                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext));
-        return new ReactorClientHttpConnector(httpClient);
-    }
-
 
     /**
      * Defines a {@link DataRouteSupporting} for Bulk Ops. By default, this is detached from any
@@ -214,14 +202,16 @@ public class BulkOperationsServiceAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     BulkOperationHandler catalogBulkOperationHandler(
-            CatalogProvider catalogProvider,
+            CatalogProvider<? extends CatalogItem> catalogProvider,
             DetachedDurableMessageSender sender,
+            BulkOperationsProviderProperties providerProperties,
             CreateSandboxRequestProducer createSandboxRequestProducer,
             BulkOpsInitializeItemsRequestProducer bulkOpsInitializeItemsRequestProducer,
             MessageSource messageSource,
             TypeFactory typeFactory) {
         return new CatalogBulkOperationHandler(catalogProvider,
                 sender,
+                providerProperties,
                 createSandboxRequestProducer,
                 bulkOpsInitializeItemsRequestProducer,
                 messageSource,

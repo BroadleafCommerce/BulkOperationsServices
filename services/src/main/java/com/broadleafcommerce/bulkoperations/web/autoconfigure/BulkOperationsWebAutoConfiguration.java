@@ -17,13 +17,27 @@
 package com.broadleafcommerce.bulkoperations.web.autoconfigure;
 
 import org.broadleafcommerce.frameworkmapping.annotation.FrameworkControllerScan;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.broadleafcommerce.bulkoperations.web.endpoint.BulkOperationsEndpoint;
+import com.broadleafcommerce.bulkoperations.web.exception.BulkOperationsExceptionAdvisor;
 
 @Configuration
 public class BulkOperationsWebAutoConfiguration {
     @Configuration
     @FrameworkControllerScan(basePackageClasses = BulkOperationsEndpoint.class)
     static class EnableBroadleafControllers {}
+
+    @Configuration
+    static class AdditionalSpringComponents {
+
+        @Bean
+        @ConditionalOnMissingBean
+        BulkOperationsExceptionAdvisor bulkOperationsExceptionAdvisor() {
+            return new BulkOperationsExceptionAdvisor();
+        }
+
+    }
 }

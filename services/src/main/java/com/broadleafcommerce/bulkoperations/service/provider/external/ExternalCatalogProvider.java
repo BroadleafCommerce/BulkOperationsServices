@@ -152,12 +152,13 @@ public class ExternalCatalogProvider<I extends CatalogItem> implements CatalogPr
             BulkOperationResponse bulkOperationResponse,
             ContextInfo contextInfo) {
         final String updateBulkOperationTotalRecordCountUrl =
-                getUpdateBulkOperationTotalRecordCountUrl(totalRecordCount, bulkOperationResponse);
+                getUpdateBulkOperationTotalRecordCountUrl(bulkOperationResponse);
 
         return providerUtils.executeRequest(() -> getWebClient()
                 .patch()
                 .uri(updateBulkOperationTotalRecordCountUrl)
                 .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(totalRecordCount)
                 .headers(httpHeaders -> httpHeaders.putAll(providerUtils.getHeaders(contextInfo)))
                 .attributes(clientRegistrationId(getServiceClient()))
                 .retrieve()
@@ -198,13 +199,12 @@ public class ExternalCatalogProvider<I extends CatalogItem> implements CatalogPr
                 .toUriString();
     }
 
-    protected String getUpdateBulkOperationTotalRecordCountUrl(long totalRecordCount,
+    protected String getUpdateBulkOperationTotalRecordCountUrl(
             BulkOperationResponse bulkOperationResponse) {
         return fromHttpUrl(properties.getUrl())
                 .path(properties.getBulkOperationUri())
                 .pathSegment(bulkOperationResponse.getId())
                 .path(properties.getBulkOperationTotalRecordsUri())
-                .queryParam("totalRecordsCount", totalRecordCount)
                 .toUriString();
     }
 

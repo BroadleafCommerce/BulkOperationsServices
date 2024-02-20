@@ -27,6 +27,7 @@ import com.broadleafcommerce.bulkoperations.domain.CatalogItem;
 import com.broadleafcommerce.bulkoperations.messaging.BulkOpsInitializeItemsConsumer;
 import com.broadleafcommerce.bulkoperations.messaging.InitializeBulkOperationItemsListener;
 import com.broadleafcommerce.bulkoperations.messaging.InitializeBulkOperationItemsProperties;
+import com.broadleafcommerce.bulkoperations.service.environment.BulkOperationsProviderProperties;
 import com.broadleafcommerce.bulkoperations.service.provider.CatalogProvider;
 import com.broadleafcommerce.bulkoperations.service.provider.SearchProvider;
 import com.broadleafcommerce.common.extension.ConditionalOnPropertyOrGroup;
@@ -50,12 +51,14 @@ public class BulkOpsMessagingAutoConfiguration {
             SearchProvider<? extends CatalogItem> searchProvider,
             IdempotentMessageConsumptionService idempotentConsumptionService,
             DetachedDurableMessageSender sender,
-            BulkOpsProcessRequestProducer processRequestProducer) {
+            BulkOpsProcessRequestProducer processRequestProducer,
+            BulkOperationsProviderProperties bulkOperationsProviderProperties) {
         return new InitializeBulkOperationItemsListener(initializeBulkOperationItemsProperties,
                 catalogProvider,
                 searchProvider,
                 idempotentConsumptionService,
                 sender,
-                processRequestProducer);
+                processRequestProducer,
+                bulkOperationsProviderProperties);
     }
 }

@@ -21,48 +21,38 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 @ConfigurationProperties("broadleaf.bulkoperations.catalogprovider")
 public class ExternalCatalogProperties {
 
     /**
      * The base url for an external catalog service: {@code https://localhost:8447/catalog}.
      */
-    @Getter
-    @Setter
     private String url;
 
     /**
      * The context path to the bulk operation endpoint
      */
-    @Getter
-    @Setter
     private String bulkOperationUri;
 
     /**
      * The context path to the bulk operation items endpoint
      */
-    @Getter
-    @Setter
     private String bulkOperationItemsUri;
 
     /**
      * The context path to update the bulk operation total records
      */
-    @Getter
-    @Setter
     private String bulkOperationTotalRecordsUri;
 
     /**
      * The context path to the supported bulk operations endpoint
      */
-    @Getter
-    @Setter
     private String supportedBulkOpsUri;
 
     /**
      * The service client to use when calling search. Default is "bulkopsclient"
      */
-    @Getter
-    @Setter
     private String serviceClient = "bulkopsclient";
 }

@@ -21,27 +21,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 @ConfigurationProperties("broadleaf.bulkoperations.searchprovider")
 public class ExternalSearchProperties {
 
     /**
      * The base url for an external search service: {@code https://localhost:8447/search}.
      */
-    @Getter
-    @Setter
     private String url;
 
     /**
      * The context path to the catalog search endpoint
      */
-    @Getter
-    @Setter
     private String searchUri;
 
     /**
      * The service client to use when calling search. Default is "bulkopsclient"
      */
-    @Getter
-    @Setter
     private String serviceClient = "bulkopsclient";
 }

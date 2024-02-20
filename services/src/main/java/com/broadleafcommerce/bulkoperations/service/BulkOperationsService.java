@@ -16,6 +16,8 @@
  */
 package com.broadleafcommerce.bulkoperations.service;
 
+import org.springframework.lang.Nullable;
+
 import com.broadleafcommerce.bulk.v2.domain.BulkOperationRequest;
 import com.broadleafcommerce.common.error.validation.ValidationException;
 import com.broadleafcommerce.data.tracking.core.context.ContextInfo;
@@ -34,5 +36,5 @@ public interface BulkOperationsService {
      * @throws ValidationException in the event that there is a validation failure
      */
     void validateBulkOperationRequest(BulkOperationRequest bulkOperationRequest,
-            ContextInfo contextInfo);
+            @Nullable ContextInfo contextInfo);
 }

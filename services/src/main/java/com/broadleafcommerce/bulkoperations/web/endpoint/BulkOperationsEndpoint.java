@@ -67,18 +67,17 @@ public class BulkOperationsEndpoint {
             if (bulkOperationHandler.canHandle(bulkOperationRequest.getOperationType(),
                     bulkOperationRequest.getEntityType())) {
                 return bulkOperationHandler.handle(bulkOperationRequest, context);
-            } else {
-                log.warn("No handler was found for operation type {} and entity type {}",
-                        bulkOperationRequest.getOperationType(),
-                        bulkOperationRequest.getEntityType());
-
-                throw new BulkOperationHandlerNotFoundException(
-                        String.format(
-                                "No handler was found for operation type %s and entity type %s",
-                                bulkOperationRequest.getOperationType(),
-                                bulkOperationRequest.getEntityType()));
             }
         }
-        return null;
+
+        log.warn("No handler was found for operation type {} and entity type {}",
+                bulkOperationRequest.getOperationType(),
+                bulkOperationRequest.getEntityType());
+
+        throw new BulkOperationHandlerNotFoundException(
+                String.format(
+                        "No handler was found for operation type %s and entity type %s",
+                        bulkOperationRequest.getOperationType(),
+                        bulkOperationRequest.getEntityType()));
     }
 }
