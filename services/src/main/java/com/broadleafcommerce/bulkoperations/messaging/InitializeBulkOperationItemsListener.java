@@ -34,6 +34,7 @@ import com.broadleafcommerce.bulkoperations.service.environment.BulkOperationsPr
 import com.broadleafcommerce.bulkoperations.service.environment.RouteConstants;
 import com.broadleafcommerce.bulkoperations.service.provider.CatalogProvider;
 import com.broadleafcommerce.bulkoperations.service.provider.SearchProvider;
+import com.broadleafcommerce.common.extension.TypeFactory;
 import com.broadleafcommerce.common.extension.data.DataRouteByKey;
 import com.broadleafcommerce.common.messaging.notification.DetachedDurableMessageSender;
 import com.broadleafcommerce.common.messaging.service.IdempotentMessageConsumptionService;
@@ -74,6 +75,8 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
     @Getter(AccessLevel.PROTECTED)
     private final BulkOperationsProviderProperties bulkOperationsProviderProperties;
 
+    @Getter(AccessLevel.PROTECTED)
+    private final TypeFactory typeFactory;
 
     @StreamListener(BulkOpsInitializeItemsConsumer.CHANNEL)
     public void listen(Message<BulkOpsInitializeItemsRequest> message) {
@@ -120,8 +123,9 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
 
     private void sendProcessBulkOperationRequest(BulkOpsInitializeItemsRequest request) {
         String bulkOpsId = request.getBulkOperationResponse().getId();
-        BulkOpsProcessRequest processRequest = new BulkOpsProcessRequest(bulkOpsId,
-                request.getBulkOperationRequest().getOperationType());
+        BulkOpsProcessRequest processRequest = typeFactory.get(BulkOpsProcessRequest.class);
+        processRequest.setBulkOperationId(bulkOpsId);
+        processRequest.setOperationType(request.getBulkOperationRequest().getOperationType());
 
         if (bulkOperationsProviderProperties != null
                 && !"none".equals(bulkOperationsProviderProperties.getProvider())
