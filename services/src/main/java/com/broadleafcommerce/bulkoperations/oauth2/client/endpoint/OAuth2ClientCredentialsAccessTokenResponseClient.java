@@ -63,10 +63,7 @@ import lombok.RequiredArgsConstructor;
  * {@link WebClientReactiveClientCredentialsTokenResponseClient}, which is the reactive version of
  * this component.
  *
- *
- * TODO: move this to a broadleaf oauth2 client dependency
- *
- * @author Nick Crum (ncrum)
+ * @author Marie Standeven (marieStandeven)
  */
 @RequiredArgsConstructor
 public class OAuth2ClientCredentialsAccessTokenResponseClient implements
