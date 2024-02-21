@@ -121,11 +121,13 @@ public class InitializeBulkOperationItemsListener<CI extends CatalogItem> {
         sendProcessBulkOperationRequest(request);
     }
 
-    private void sendProcessBulkOperationRequest(BulkOpsInitializeItemsRequest request) {
+    protected void sendProcessBulkOperationRequest(
+            @lombok.NonNull BulkOpsInitializeItemsRequest request) {
         String bulkOpsId = request.getBulkOperationResponse().getId();
         BulkOpsProcessRequest processRequest = typeFactory.get(BulkOpsProcessRequest.class);
         processRequest.setBulkOperationId(bulkOpsId);
         processRequest.setOperationType(request.getBulkOperationRequest().getOperationType());
+        processRequest.setEntityType(request.getBulkOperationRequest().getEntityType());
 
         if (bulkOperationsProviderProperties != null
                 && !"none".equals(bulkOperationsProviderProperties.getProvider())
