@@ -7,4 +7,90 @@
     <preConditions>
         <dbms type="oracle" />
     </preConditions>
+    <changeSet author="jenkins (generated)" id="1708728748704-1" labels="nonindex">
+        <createTable tableName="BLC_NOTIFICATION_STATE">
+            <column name="ID" type="VARCHAR2(36 CHAR)">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="CT_4NP0W30TUSP1G4CLYGA8" />
+            </column>
+            <column defaultValue="N" name="ACKED" type="CHAR(1 BYTE)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ATTEMPTS" type="NUMBER(10, 0)" />
+            <column name="CHANGE_TIMESTAMP" type="TIMESTAMP(6)" />
+            <column name="CHANGE_TIMESTAMP_ACK" type="TIMESTAMP(6)" />
+            <column name="CONTAINER" type="VARCHAR2(36 CHAR)" />
+            <column name="ENTITY_TYPE" type="VARCHAR2(255 CHAR)">
+                <constraints nullable="false" />
+            </column>
+            <column name="MESSAGE_TYPE" type="VARCHAR2(255 CHAR)" />
+            <column name="MESSAGE_VALUE" type="CLOB" />
+            <column name="NOTIFICATION_NAME" type="VARCHAR2(255 CHAR)" />
+            <column name="NEXT_ATTEMPT" type="TIMESTAMP(6)" />
+            <column defaultValue="N" name="STOPPED" type="CHAR(1 BYTE)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-2" labels="nonindex">
+        <createTable tableName="BLC_RESOURCE_LOCK">
+            <column name="ID" type="VARCHAR2(36 CHAR)">
+                <constraints nullable="false" primaryKey="true"
+                    primaryKeyName="CT_0IMXCXK1UEG1RGD73RK1" />
+            </column>
+            <column name="CONCEPT_KEY" type="VARCHAR2(255 CHAR)" />
+            <column name="CONTEXT_ID" type="VARCHAR2(36 CHAR)" />
+            <column name="LOCK_EXPIRATION_TIMESTAMP" type="TIMESTAMP(6)" />
+            <column defaultValue="N" name="LOCKED" type="CHAR(1 BYTE)" />
+            <column name="SANDBOX_ID" type="VARCHAR2(36 CHAR)" />
+            <column name="LOCK_TIMESTAMP" type="TIMESTAMP(6)" />
+            <column name="TOKEN" type="VARCHAR2(255 CHAR)" />
+            <column name="TYPE_ALIAS" type="VARCHAR2(255 CHAR)" />
+        </createTable>
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-3" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM BLC_RESOURCE_LOCK</sqlCheck>
+        </preConditions>
+        <createIndex indexName="UK7IEGJT4GOJV24Q9BW8K0I4J0C"
+            tableName="BLC_RESOURCE_LOCK" unique="true">
+            <column name="CONTEXT_ID" />
+            <column name="TYPE_ALIAS" />
+            <column name="SANDBOX_ID" />
+            <column name="CONCEPT_KEY" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-4" labels="nonindex">
+        <addUniqueConstraint
+            columnNames="CONTEXT_ID, TYPE_ALIAS, SANDBOX_ID, CONCEPT_KEY"
+            constraintName="UK7IEGJT4GOJV24Q9BW8K0I4J0C" forIndexName="UK7IEGJT4GOJV24Q9BW8K0I4J0C"
+            tableName="BLC_RESOURCE_LOCK" />
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-5" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM BLC_NOTIFICATION_STATE</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDX7I0I5VCL1DKKWUQ5DYC88WEM5"
+            tableName="BLC_NOTIFICATION_STATE">
+            <column name="ACKED" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-6" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM BLC_NOTIFICATION_STATE</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDXGFAQE3XMQ5Q4YH78MIX1G04FY"
+            tableName="BLC_NOTIFICATION_STATE">
+            <column name="CONTAINER" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="jenkins (generated)" id="1708728748704-7" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM BLC_RESOURCE_LOCK</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDXKM4Y3QJ3JH2MPT0RT6L6VSCL8"
+            tableName="BLC_RESOURCE_LOCK">
+            <column name="TOKEN" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
