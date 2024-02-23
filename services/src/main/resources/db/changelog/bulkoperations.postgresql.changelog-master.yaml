@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: schema-bulkoperations
+      author: broadleaf
+      changes:
+        - sql:
+            sql: create schema if not exists bulkoperations
+  - include:
+      file: db/changelog/bulkoperations.postgresql.changelog-master.xml

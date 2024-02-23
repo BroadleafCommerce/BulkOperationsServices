@@ -1,0 +1,82 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <preConditions>
+        <dbms type="mariadb" />
+    </preConditions>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-1" labels="nonindex">
+        <createTable tableName="blc_notification_state">
+            <column name="id" type="VARCHAR(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column defaultValue="N" name="acked" type="CHAR(1)">
+                <constraints nullable="false" />
+            </column>
+            <column defaultValueComputed="NULL" name="attempts" type="INT" />
+            <column defaultValueComputed="NULL" name="change_timestamp" type="datetime" />
+            <column defaultValueComputed="NULL" name="change_timestamp_ack" type="datetime" />
+            <column name="container" type="VARCHAR(36)" />
+            <column name="entity_type" type="VARCHAR(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="message_type" type="VARCHAR(255)" />
+            <column name="message_value" type="MEDIUMTEXT" />
+            <column name="notification_name" type="VARCHAR(255)" />
+            <column defaultValueComputed="NULL" name="next_attempt" type="datetime" />
+            <column defaultValue="N" name="stopped" type="CHAR(1)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-2" labels="nonindex">
+        <createTable tableName="blc_resource_lock">
+            <column name="id" type="VARCHAR(36)">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="concept_key" type="VARCHAR(255)" />
+            <column name="context_id" type="VARCHAR(36)" />
+            <column defaultValueComputed="NULL" name="lock_expiration_timestamp"
+                type="datetime" />
+            <column defaultValue="N" name="locked" type="CHAR(1)" />
+            <column name="sandbox_id" type="VARCHAR(36)" />
+            <column defaultValueComputed="NULL" name="lock_timestamp" type="datetime" />
+            <column name="token" type="VARCHAR(255)" />
+            <column name="type_alias" type="VARCHAR(255)" />
+        </createTable>
+    </changeSet>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-3" labels="nonindex">
+        <addUniqueConstraint
+            columnNames="context_id, type_alias, sandbox_id, concept_key"
+            constraintName="UK7iegjt4gojv24q9bw8k0i4j0c" tableName="blc_resource_lock" />
+    </changeSet>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-4" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM blc_notification_state</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDX7i0i5vcl1dkkwuq5dyc88wem5"
+            tableName="blc_notification_state">
+            <column name="acked" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-5" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM blc_notification_state</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDXgfaqe3xmq5q4yh78mix1g04fy"
+            tableName="blc_notification_state">
+            <column name="container" />
+        </createIndex>
+    </changeSet>
+    <changeSet author="mariestandeven (generated)" id="1707420827432-6" labels="index">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM blc_resource_lock</sqlCheck>
+        </preConditions>
+        <createIndex indexName="IDXkm4y3qj3jh2mpt0rt6l6vscl8"
+            tableName="blc_resource_lock">
+            <column name="token" />
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

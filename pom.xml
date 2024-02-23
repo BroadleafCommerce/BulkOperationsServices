@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.broadleafcommerce.microservices</groupId>
+        <artifactId>broadleaf-services-jpa-only-parent</artifactId>
+        <version>2.0.1-SNAPSHOT</version>
+        <relativePath />
+    </parent>
+    <artifactId>broadleaf-bulk-operations-services-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>Broadleaf Bulk Operations Service Parent</name>
+    <description>Bulk Operations Parent</description>
+
+    <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>broadleaf-microservices</id>
+            <url>https://repository.broadleafcommerce.com/repository/microservices/</url>
+        </repository>
+    </repositories>
+
+    <scm>
+        <connection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsServices.git</connection>
+        <developerConnection>scm:git:git@github.com:BroadleafCommerce/BulkOperationsServices.git</developerConnection>
+        <url>https://github.com/BroadleafCommerce/BulkOperationsServices</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>deptrack</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <modules>
+        <module>services</module>
+    </modules>
+
+</project>
